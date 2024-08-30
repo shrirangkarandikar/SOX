@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-
+# Initialize global variables for initial weights, weight updates, and error values
 initial_weights = None
 weight_updates = []
 error_mat = []
@@ -28,12 +28,15 @@ def fit(x_random, y,error_tol):
     fit.weight_updates = []
     fit.error_mat = []
     
+    # Define the polynomial function
     def p1(x):
         return np.dot(x, weights_n)
     
+    # Function to calculate the error
     def calculate_errors(z):
         return ((z)**2) / polynomial_length
     
+    # Gradient descent loop
     for i in range(100000):
         y_mult = p1(x_random)
         z = y_mult - y 
@@ -42,8 +45,9 @@ def fit(x_random, y,error_tol):
         weights_n -= grad_a1
         if np.all(error < error_tol):
             break
-        fit.weight_updates.append(weights_n.copy())
-        fit.error_mat.append(np.sum(error))
+        
+        fit.weight_updates.append(weights_n.copy())  # Store the updated weights
+        fit.error_mat.append(np.sum(error))  # Store the sum of errors
     
     print(f"Converged in {i} iterations")
     print("initial weights")
