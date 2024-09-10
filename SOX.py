@@ -1,4 +1,5 @@
 import Func_Fit
+from Func_Fit import playground
 
 '''
 
@@ -49,27 +50,71 @@ ________________________________________________________________________________
     Following is the demo code for the module Func_fit:
 '''
 '''
-
 print("Enter data info: ")
 dimensions=int(input("Dimension of the polynomial "))
 num_func=int(input("Number of Functions "))
-val_count=int(input("Count of the Function value "))                                                                                                                                                                                                                                                
+datapoints=int(input("Count of the Function value "))                                                                                                                                                                                                                                                
 monomial=int(input("Monomial:(1/0)"))
 error_tol=float(input("Tolerable error "))
 
-x_random,y=Func_Fit.create_data(dimensions,num_func,monomial,val_count)
+x_random,y=Func_Fit.create_data(dimensions,num_func,monomial,datapoints)
 print(x_random)
 error = Func_Fit.fit(x_random,y,error_tol)
 anim = Func_Fit.animate()
 
 '''
 '''
-print("Error for the Polynomial",error)
 
 
 The following is the tutorial of the working of the Func_fit
 
-Func_Fit.tutorial()
+#t=Func_Fit.tutorial()
+#t.run()
 '''
-learning_rate_fun=Func_Fit.playground()
-learning_rate_fun(10, 11, 10)
+
+'''
+The Playground class provides a suite of functions for experimenting with gradient descent and other optimization methods. 
+It includes functionalities for testing different learning rates, comparing gradient descent and stochastic gradient descent, 
+and evaluating how varying input sizes affect convergence. Additionally, it provides error metrics to assess the performance 
+of optimization algorithms.
+--------------------------------------------------------------------------------------------------------------------
+Functions:
+1)learning_rate(dimensions, num_func, datapoints):
+    Analyzes the effect of different learning rates on the convergence of gradient descent. Compares low and high learning 
+    rates by plotting their error convergence over iterations.
+    
+    dimensions: Number of variables in the polynomial.
+    num_func: Number of output functions.
+    datapoints: Number of data points to use for testing.
+------------------------------------------------------------------------------------------------------------------------
+2)Grad_Desc(dimensions, num_func, datapoints):
+    Compares Gradient Descent (GD) and Stochastic Gradient Descent (SGD) methods. Visualizes how each method converges by 
+    plotting error convergence over iterations.
+    
+    dimensions: Number of variables in the polynomial.
+    num_func: Number of output functions.
+    datapoints: Number of data points to use for testing.
+----------------------------------------------------------------------------------------------------------------------------
+3)var_inp(dimensions, num_func, datapoints):
+    Examines the effect of varying input sizes on gradient descent convergence. Compares the convergence of GD for different 
+    input sizes by plotting error convergence.
+    
+    dimensions: Number of variables in the polynomial.
+    num_func: Number of output functions.
+    datapoints: Number of data points to use for testing.
+----------------------------------------------------------------------------------------------------------------------------------------
+4)error(dimensions, num_func, datapoints):
+    Tests the performance of different error metrics (MAE, MSE, and infinity norm) in gradient descent. Analyzes how each metric
+    influences the convergence of gradient descent by visualizing error convergence over iterations.
+    
+    dimensions: Number of variables in the polynomial.
+    num_func: Number of output functions.
+    datapoints: Number of data points to use for testing.
+'''
+
+#learning_rate_fun=Func_Fit.playground.learning_rate(dimensions=10, num_func=10, datapoints=100)
+#errorchange=Func_Fit.playground.error(dimensions=5, num_func=1, datapoints=10)
+#grad=Func_Fit.playground.Grad_Desc(dimensions=5, num_func=1, datapoints=10)
+var_inp=Func_Fit.playground.var_inp(dimensions=5, num_func=1, datapoints=10)
+
+
