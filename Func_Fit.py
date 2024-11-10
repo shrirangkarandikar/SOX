@@ -105,16 +105,6 @@ def fit(x_random, y, error_tol):
         fit.error_mat.append(np.sum(error))  # Store the sum of errors
     
     print(f"Converged in {i} iterations")
-    print("initial weights")
-    print(fit.initial_weights)
-    print("final weights")
-    print(weights_n)
-    print("difference")
-    print(fit.initial_weights - weights_n)
-    print(np.max(fit.initial_weights - weights_n), 
-          np.argmax(fit.initial_weights - weights_n))
-    print("error")
-    print(error)
     error_all = np.sum(error)
     return error_all
 
@@ -344,7 +334,7 @@ class tutorial():
         line_error, = ax[1].plot([], [], lw=2, color='green')
 
         # Display the values of the weights
-        weight_values = ax[0].text(0.5, 0.9, '', transform=ax[0].transAxes)
+        weight_values = ax[0].text(0.001, 0.95, '', transform=ax[0].transAxes,fontsize=8)
 
         def update_animation(i):
             # Update the plot with current weights
@@ -352,7 +342,8 @@ class tutorial():
             # Update the error convergence plot
             line_error.set_data(range(i + 1), tutorial.error_mat[:i + 1])
             # Update weight values display
-            weight_values.set_text(f"Weights: {tutorial.weight_updates[i].flatten()}")
+            weight_values.set_text(f"Weights: {[f'{w:.2f}' for w in tutorial.weight_updates[i].flatten()]}")
+
 
             return current_weights, line_error, weight_values
 
@@ -400,13 +391,17 @@ class playground():
         x_random = np.random.uniform(-1, 1, (datapoints, dimensions))
         weights = np.random.uniform(0, 2, (dimensions, num_func))
         y = np.dot(x_random, weights)
+        low_lr = float(input("Select a low learning rate from 0.001,0.0001,0.00001:"))
+        high_lr = float(input("Select a high learning rate from 0.01,0.1,1,10"))
+
+
 
         # Low learning rate gradient descent
         np.random.seed(4)
         weights_n = np.random.uniform(0, 2, (dimensions, num_func))
         
         def low():
-            lr = 0.001  # Low learning rate
+            
             weights_n_low = weights_n.copy()
             errors_low = []
             
@@ -417,12 +412,12 @@ class playground():
                 return np.mean(z**2)  # Mean Squared Error (MSE)
             
             # Gradient Descent loop
-            for i in range(100000):
+            for i in range(10000):
                 y_mult = p1(x_random)
                 z = y_mult - y
                 error = calculate_errors(z)
                 errors_low.append(error)
-                grad_a1 = np.dot(x_random.T, z) * lr / dimensions
+                grad_a1 = np.dot(x_random.T, z) * low_lr / dimensions
                 weights_n_low -= grad_a1
                 if error < err:
                     break
@@ -433,7 +428,7 @@ class playground():
         weights_n = np.random.uniform(0, 2, (dimensions, num_func))
         
         def high():
-            lr = 0.1  # High learning rate
+            lr = 0.01  # High learning rate
             x_random_high = np.random.uniform(-1, 1, (datapoints, dimensions))
             y_high = np.dot(x_random_high, weights)
             weights_n_high = weights_n.copy()
@@ -446,7 +441,7 @@ class playground():
                 return np.mean(z**2)  # Mean Squared Error (MSE)
             
             # Gradient Descent loop
-            for i in range(100000):
+            for i in range(10000):
                 y_mult = p1(x_random_high)
                 z = y_mult - y_high
                 error = calculate_errors(z)
@@ -457,11 +452,10 @@ class playground():
                     break
             return errors_high
 
-        '''
+        
         # Adaptive Learning Rate Gradient Descent (commented out)
         def adap():
-            lr = 0.00001
-            epsilon = 1e-8
+            lr = 0.001
             x_random_adap = np.random.uniform(-1, 1, (datapoints, dimensions))
             y_adap = np.dot(x_random_adap, weights)
             weights_n_adap = weights_n
@@ -473,59 +467,58 @@ class playground():
             def calculate_errors(z):
                 return np.mean(z**2)  # Mean Squared Error (MSE)
             
-            grad_accumulator = np.zeros_like(weights_n_adap)
-            # Gradient Descent loop with adaptive learning rate
-            for i in range(100000):
+            
+            for i in range(10000):
                 y_mult = p1(x_random_adap)
                 z = y_mult - y_adap
                 error = calculate_errors(z)
                 errors_adap.append(error)
                 grad_a1 = np.dot(x_random_adap.T, z) / dimensions
-                grad_accumulator += grad_a1 ** 2
-                adjusted_lr = lr / (np.sqrt(grad_accumulator) + epsilon)
-                weights_n_adap -= adjusted_lr * grad_a1
+                if(i!=0 and i%10==0):
+                    lr=lr/10
+                weights_n_adap -= lr * grad_a1
                 if error < err:
                     break
             
-            errors_adap = np.zeros([5000, 100])
+            errors_adap.append(error)
             return errors_adap
-        '''
+        
 
         # Run all gradient descent functions
         error_low = low()
         error_high = high()
-        # error_adap = adap()  # Adaptive learning rate is commented out
+        error_adap = adap()  # Adaptive learning rate is commented out
 
-        max_iter = max(len(error_low), len(error_high))
+        max_iter = max(len(error_low), len(error_high),len(error_adap))
         # Function to pad error lists to the same length
         def pad_errors(errors):
             return errors + [errors[-1]] * (max_iter - len(errors))
         
         error_low = pad_errors(error_low)
         error_high = pad_errors(error_high)
-        # error_adap = pad_errors(error_adap)  # For adaptive learning rate
+        error_adap = pad_errors(error_adap)  # For adaptive learning rate
 
         # Create plot to visualize error convergence
         fig, ax = plt.subplots()
         ax.set_xlim(0, max_iter)
-        ax.set_ylim(-0.5, max(max(error_low), max(error_high)))
+        ax.set_ylim(-0.5, max(max(error_low), max(error_high),max(error_adap)))
 
         low_line, = ax.plot([], [], label="Low Learning Rate", color="blue")
         high_line, = ax.plot([], [], label="High Learning Rate", color="green")
-        # adap_line, = ax.plot([], [], label="Adap Learning Rate", color="red")
+        adap_line, = ax.plot([], [], label="Adap Learning Rate", color="red")
 
         def init():
             low_line.set_data([], [])
             high_line.set_data([], [])
-            # adap_line.set_data([], [])
-            return low_line, high_line
+            adap_line.set_data([], [])
+            return low_line, high_line,adap_line
 
         def update(frame):
             x = np.arange(0, frame + 1)
             low_line.set_data(x, error_low[:frame + 1])
             high_line.set_data(x, error_high[:frame + 1])
-            # adap_line.set_data(x, error_adap[:frame + 1])
-            return low_line, high_line
+            adap_line.set_data(x, error_adap[:frame + 1])
+            return low_line, high_line,adap_line
 
         ani = FuncAnimation(fig, update, frames=max_iter, init_func=init, blit=True)
         plt.legend()
@@ -655,9 +648,9 @@ class playground():
         ax.set_xlim(0, max_iterations)
         ax.set_ylim(0, max(max(mae_errors), max(mse_errors), max(inf_norm_errors)))
 
-        mae_line, = ax.plot([], [], label="MAE", color="blue")
-        mse_line, = ax.plot([], [], label="MSE", color="green")
-        inf_norm_line, = ax.plot([], [], label="Infinity Norm", color="red")
+        mae_line, = ax.plot([], [], label="L1 error", color="blue")
+        mse_line, = ax.plot([], [], label="L2 error", color="green")
+        inf_norm_line, = ax.plot([], [], label="L-inf error", color="red")
         
         def init():
             mae_line.set_data([], [])
@@ -680,7 +673,7 @@ class playground():
         plt.show()
 
     @staticmethod
-    def Grad_Desc(dimensions, num_func, datapoints):
+    def Grad_Desc(dimensions, num_func, datapoints,batch_size):
         """
         Compares Gradient Descent (GD) and Stochastic Gradient Descent (SGD) with error convergence.
         
@@ -722,12 +715,12 @@ class playground():
                     break
             
             return error_list
-
+        batch_size = batch_size
         # Stochastic Gradient Descent
         def SGD():
             weights_n = np.random.uniform(0, 2, (dimensions, num_func))
             learning_rate = 0.1
-            batch_size = 10
+            
             num_iterations = 1000
             error_tol = 0.01
             error_list = []
@@ -957,11 +950,284 @@ class playground():
         plt.title("Error Convergence for Different Input Sizes")
         plt.show()
 
-            
+    def tolerance(dimensions, num_func, datapoints):
+        """
+        Compares the effect of varying error tolerances on gradient descent convergence.
+        
+        Parameters:
+            dimensions (int): Number of input features.
+            num_func (int): Number of output functions or target variables.
+            datapoints (int): Number of data points.
+        
+        This method visualizes error convergence for different input sizes:
+        - Original Error Tolerance 
+        - Increased Tolerance
+        - Decreased Tolerance
+        """
+        tol_original=float(input("Enter the error tolerance:"))
+        # Gradient Descent for original input size
+        def original():
+            x_random = np.random.uniform(-1, 1, (datapoints, dimensions))
+            weights = np.random.uniform(0, 2, (dimensions, num_func))
+            y = np.dot(x_random, weights)
+            np.random.seed(4)
+            weights_n = np.random.uniform(0, 2, (dimensions, num_func))
+            lr = 0.1
+            error_original = []
 
-            
+            def p1(x):
+                return np.dot(x, weights_n)
 
+            def calculate_errors(z):
+                return np.mean(np.abs(z))  # Mean Absolute Error (MAE)
 
+            # Gradient Descent loop
+            for i in range(1000):
+                y_mult = p1(x_random)
+                z = y_mult - y
+                error = calculate_errors(z)
+                grad_a1 = np.dot(x_random.T, z) * lr / dimensions
+                weights_n -= grad_a1
+                error_original.append(error)
+                if error < tol_original:
+                    break
+            return error_original
+        def increased():
+            x_random = np.random.uniform(-1, 1, (datapoints, dimensions))
+            weights = np.random.uniform(0, 2, (dimensions, num_func))
+            y = np.dot(x_random, weights)
+            np.random.seed(4)
+            weights_n = np.random.uniform(0, 2, (dimensions, num_func))
+            lr = 0.1
+            error_increased = []
+            tol_increased=10*tol_original
 
+            def p1(x):
+                return np.dot(x, weights_n)
+
+            def calculate_errors(z):
+                return np.mean(np.abs(z))  # Mean Absolute Error (MAE)
+
+            # Gradient Descent loop
+            for i in range(1000):
+                y_mult = p1(x_random)
+                z = y_mult - y
+                error = calculate_errors(z)
+                grad_a1 = np.dot(x_random.T, z) * lr / dimensions
+                weights_n -= grad_a1
+                error_increased.append(error)
+                if error < tol_increased:
+                    break
+
+            return error_increased
+        def decreased():
+            x_random = np.random.uniform(-1, 1, (datapoints, dimensions))
+            weights = np.random.uniform(0, 2, (dimensions, num_func))
+            y = np.dot(x_random, weights)
+            np.random.seed(4)
+            weights_n = np.random.uniform(0, 2, (dimensions, num_func))
+            lr = 0.1
+            error_decreased = []
+            tol_decreased=tol_original/10
+
+            def p1(x):
+                return np.dot(x, weights_n)
+
+            def calculate_errors(z):
+                return np.mean(np.abs(z))  # Mean Absolute Error (MAE)
+
+            # Gradient Descent loop
+            for i in range(1000):
+                y_mult = p1(x_random)
+                z = y_mult - y
+                error = calculate_errors(z)
+                grad_a1 = np.dot(x_random.T, z) * lr / dimensions
+                weights_n -= grad_a1
+                error_decreased.append(error)
+                if error < tol_decreased:
+                    break
+
+            return error_decreased
+        # Run Gradient Descent for different input sizes
+        error_original = original()
+        error_increased = increased()
+        error_decreased = decreased()
+
+        # Determine the maximum number of iterations
+        max_iterations = max(len(error_original), len(error_increased), len(error_decreased))
+
+        # Function to pad error lists to the same length
+        def pad_errors(errors):
+            return errors + [errors[-1]] * (max_iterations - len(errors))
+
+        error_original = pad_errors(error_original)
+        error_increased = pad_errors(error_increased)
+        error_decreased = pad_errors(error_decreased)
+
+        # Create plot to visualize error convergence
+        fig, ax = plt.subplots()
+        ax.set_xlim(0, max_iterations)
+        ax.set_ylim(0, max(max(error_original), max(error_increased), max(error_decreased)))
+
+        original_line, = ax.plot([], [], label="Original", color="blue")
+        increased_line, = ax.plot([], [], label="Increased", color="green")
+        decreased_line, = ax.plot([], [], label="Decreased", color="red")
+
+        def init():
+            original_line.set_data([], [])
+            increased_line.set_data([], [])
+            decreased_line.set_data([], [])
+            return original_line, increased_line, decreased_line
+
+        def update(frame):
+            x = np.arange(0, frame + 1)
+            original_line.set_data(x, error_original[:frame + 1])
+            increased_line.set_data(x, error_increased[:frame + 1])
+            decreased_line.set_data(x, error_decreased[:frame + 1])
+            return original_line, increased_line, decreased_line
+
+        ani = FuncAnimation(fig, update, frames=max_iterations, init_func=init, blit=True)
+        plt.legend()
+        plt.xlabel("Iterations")
+        plt.ylabel("Error")
+        plt.title("Error Convergence for Different Tolerances")
+        plt.show()
 
     
+
+    def activation(dimensions, num_func, datapoints):
+        """
+        Compares the effect of different activation functions on the convergence of gradient descent.
+        
+        Parameters:
+            dimensions (int): Number of input features.
+            num_func (int): Number of output functions or target variables.
+            datapoints (int): Number of data points.
+            
+        This function visualizes error convergence for four activation functions:
+        - No activation function
+        - Tanh activation
+        - Sigmoid activation
+        - ReLU activation
+        """
+        err = 0.001
+        learning_rate = 0.01
+        x_random = np.random.uniform(-1, 1, (datapoints, dimensions))
+        weights = np.random.uniform(0, 2, (dimensions, num_func))
+        y = np.dot(x_random, weights)
+
+        def calculate_errors(z):
+            return np.mean(z**2)  # Mean Squared Error (MSE)
+
+        # Define activation functions and their derivatives
+        def none_activation(z):
+            return z
+
+        def none_derivative(z):
+            return np.ones_like(z)  # Derivative of a linear function is 1
+
+        def tanh_activation(z):
+            return np.tanh(z)
+
+        def tanh_derivative(z):
+            return 1 - np.tanh(z)**2  # Derivative of tanh is 1 - tanh^2(z)
+
+        def sigmoid_activation(z):
+            return 1 / (1 + np.exp(-z))
+
+        def sigmoid_derivative(z):
+            sig = sigmoid_activation(z)
+            return sig * (1 - sig)  # Derivative of sigmoid is sigmoid(z)*(1 - sigmoid(z))
+
+        def relu_activation(z):
+            return np.maximum(0, z)
+
+        def relu_derivative(z):
+            return (z > 0).astype(float)  # Derivative of ReLU is 1 for z > 0 and 0 otherwise
+
+        # Gradient Descent Function for each activation
+        def gradient_descent(activation_func, activation_derivative):
+            np.random.seed(4)  # Ensure the same random seed for reproducibility
+            weights_n = np.random.uniform(0, 2, (dimensions, num_func))  # Reinitialize weights
+            errors = []
+            
+            def p1(x):
+                return activation_func(np.dot(x, weights_n))
+            
+            for i in range(10000):
+                y_mult = p1(x_random)
+                z = y_mult - y
+                error = calculate_errors(z)
+                errors.append(error)
+
+                # Multiply the gradient by the derivative of the activation function
+                grad_a1 = np.dot(x_random.T, z * activation_derivative(y_mult)) * learning_rate / dimensions
+                weights_n -= grad_a1
+
+                if error < err:
+                    break
+            return errors
+
+        # Run gradient descent with different activation functions and their derivatives
+        error_none = gradient_descent(none_activation, none_derivative)
+        error_tanh = gradient_descent(tanh_activation, tanh_derivative)
+        error_sigmoid = gradient_descent(sigmoid_activation, sigmoid_derivative)
+        error_relu = gradient_descent(relu_activation, relu_derivative)
+
+        # Find the maximum number of iterations for padding
+        max_iter = max(len(error_none), len(error_tanh), len(error_sigmoid), len(error_relu))
+
+        # Pad errors to ensure all lists have the same length
+        def pad_errors(errors):
+            return errors + [errors[-1]] * (max_iter - len(errors))
+
+        error_none = pad_errors(error_none)
+        error_tanh = pad_errors(error_tanh)
+        error_sigmoid = pad_errors(error_sigmoid)
+        error_relu = pad_errors(error_relu)
+
+        # Plotting and animating the errors for different activation functions
+        fig, ax = plt.subplots()
+        ax.set_xlim(0, max_iter)
+        ax.set_ylim(0, max(max(error_none), max(error_tanh), max(error_sigmoid), max(error_relu)))
+
+        none_line, = ax.plot([], [], label="No Activation", color="blue")
+        tanh_line, = ax.plot([], [], label="Tanh Activation", color="green")
+        sigmoid_line, = ax.plot([], [], label="Sigmoid Activation", color="red")
+        relu_line, = ax.plot([], [], label="ReLU Activation", color="purple")
+
+        def init():
+            none_line.set_data([], [])
+            tanh_line.set_data([], [])
+            sigmoid_line.set_data([], [])
+            relu_line.set_data([], [])
+            return none_line, tanh_line, sigmoid_line, relu_line
+
+        def update(frame):
+            x = np.arange(0, frame + 1)
+            none_line.set_data(x, error_none[:frame + 1])
+            tanh_line.set_data(x, error_tanh[:frame + 1])
+            sigmoid_line.set_data(x, error_sigmoid[:frame + 1])
+            relu_line.set_data(x, error_relu[:frame + 1])
+            return none_line, tanh_line, sigmoid_line, relu_line
+
+        ani = FuncAnimation(fig, update, frames=max_iter, init_func=init, blit=True)
+        plt.legend()
+        plt.xlabel("Iterations")
+        plt.ylabel("Error")
+        plt.title("Error Convergence for Different Activation Functions")
+        plt.show()
+
+
+
+            
+
+
+                
+
+                
+
+
+
+
+        

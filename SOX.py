@@ -61,15 +61,15 @@ x_random,y=Func_Fit.create_data(dimensions,num_func,monomial,datapoints)
 print(x_random)
 error = Func_Fit.fit(x_random,y,error_tol)
 anim = Func_Fit.animate()
-
-'''
 '''
 
+'''
 
-The following is the tutorial of the working of the Func_fit
 
-#t=Func_Fit.tutorial()
-#t.run()
+#The following is the tutorial of the working of the Func_fit
+
+t=Func_Fit.tutorial()
+t.run()
 '''
 
 '''
@@ -110,11 +110,19 @@ Functions:
     dimensions: Number of variables in the polynomial.
     num_func: Number of output functions.
     datapoints: Number of data points to use for testing.
+--------------------------------------------------------------------------------------------------------------------------------------
+5)tolerance(dimensions, num_func, datapoints):
+    Tests the performance when the tolerance for error is changed. Analyses how it affects the weights of the 
+    functions.
+
+    dimensions: Number of variables in the polynomial.
+    num_func: Number of output functions.
+    datapoints: Number of data points to use for testing.
 '''
 
-#learning_rate_fun=Func_Fit.playground.learning_rate(dimensions=10, num_func=10, datapoints=100)
+learning_rate_fun=Func_Fit.playground.learning_rate(dimensions=5, num_func=1, datapoints=100)
 #errorchange=Func_Fit.playground.error(dimensions=5, num_func=1, datapoints=10)
-#grad=Func_Fit.playground.Grad_Desc(dimensions=5, num_func=1, datapoints=10)
-var_inp=Func_Fit.playground.var_inp(dimensions=5, num_func=1, datapoints=10)
-
-
+#grad=Func_Fit.playground.Grad_Desc(dimensions=5, num_func=1, datapoints=10,batch_size=5)
+#var_inp=Func_Fit.playground.var_inp(dimensions=5, num_func=1, datapoints=10)
+#tol=Func_Fit.playground.tolerance(dimensions=5, num_func=1, datapoints=10)
+#activ=Func_Fit.playground.activation(dimensions=5,num_func=1,datapoints=10)
